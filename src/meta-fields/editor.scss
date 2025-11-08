@@ -1,0 +1,110 @@
+.qcm-choice-items {
+  margin-top: 20px;
+}
+
+.qcm-choice-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  padding: 15px;
+  margin-bottom: 15px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+
+  &__drag {
+    flex-shrink: 0;
+    cursor: grab;
+
+    &:active {
+      cursor: grabbing;
+    }
+  }
+
+  &__image {
+    flex-shrink: 0;
+    width: 80px;
+    height: 120px;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+
+    &-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f0f0f0;
+      border: 2px dashed #ddd;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #999;
+    }
+  }
+
+  &__content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  &__actions {
+    flex-shrink: 0;
+  }
+}
+
+.qcm-api-search-modal {
+  &__controls {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+  }
+
+  &__results {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+    max-height: 500px;
+    overflow-y: auto;
+  }
+}
+
+.qcm-api-result {
+  &__content {
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+  }
+
+  &__image {
+    width: 60px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  &__info {
+    flex: 1;
+
+    h4 {
+      margin: 0 0 5px;
+      font-size: 14px;
+    }
+
+    p {
+      margin: 0;
+      font-size: 12px;
+      color: #666;
+    }
+  }
+}
