@@ -146,8 +146,8 @@ class QCM_Game_Manager {
             case 'rawg':
                 $results = $this->search_rawg( $query );
                 break;
-            case 'google_books':
-                $results = $this->search_google_books( $query );
+            case 'openlibrary':
+                $results = $this->search_openlibrary( $query );
                 break;
             default:
                 wp_send_json_error( array( 'message' => __( 'Invalid API source', 'quick-choice-movies' ) ) );
@@ -160,23 +160,30 @@ class QCM_Game_Manager {
      * Search TMDB API
      *
      * @param string $query Search query
+     * @param string $search_type Type of search (query, person, year, etc.)
      * @return array
      */
-    private function search_tmdb( $query ) {
+    private function search_tmdb( $query, $search_type = 'query' ) {
         $api_key = get_option( 'qcm_tmdb_api_key', '' );
 
         if ( ! $api_key ) {
             return array();
         }
 
-        $url = add_query_arg(
-            array(
-                'api_key' => $api_key,
-                'query'   => $query,
-            ),
-            'https://api.themoviedb.org/3/search/movie'
-        );
+        // Detectar tipo de búsqueda
+        $params = array( 'api_key' => $api_key );
+        $endpoint = 'https://api.themoviedb.org/3/search/movie';
 
+        // Si la búsqueda contiene palabras clave, buscar por persona
+        if ( preg_match('/\b(actor|director|cast|person)\b/i', $query) ) {
+            $endpoint = 'https://api.themoviedb.org/3/search/person';
+            $query = preg_replace('/\b(actor|director|cast|person)\b/i', '', $query);
+            $query = trim( $query );
+        }
+
+        $params['query'] = $query;
+
+        $url = add_query_arg( $params, $endpoint );
         $response = wp_remote_get( $url );
 
         if ( is_wp_error( $response ) ) {
@@ -190,13 +197,62 @@ class QCM_Game_Manager {
         }
 
         $results = array();
-        foreach ( $body['results'] as $movie ) {
-            $results[] = array(
-                'id'    => $movie['id'],
-                'title' => $movie['title'],
-                'image' => 'https://image.tmdb.org/t/p/w500' . $movie['poster_path'],
-                'year'  => isset( $movie['release_date'] ) ? substr( $movie['release_date'], 0, 4 ) : '',
+
+        // Si buscamos persona, obtener sus películas
+        if ( strpos( $endpoint, 'person' ) !== false && ! empty( $body['results'] ) ) {
+            $person_id = $body['results'][0]['id'];
+            $credits_url = add_query_arg(
+                array( 'api_key' => $api_key ),
+                "https://api.themoviedb.org/3/person/{$person_id}/movie_credits"
             );
+
+            $credits_response = wp_remote_get( $credits_url );
+            if ( ! is_wp_error( $credits_response ) ) {
+                $credits_body = json_decode( wp_remote_retrieve_body( $credits_response ), true );
+                $movies = array_merge(
+                    isset( $credits_body['cast'] ) ? $credits_body['cast'] : array(),
+                    isset( $credits_body['crew'] ) ? $credits_body['crew'] : array()
+                );
+
+                // Eliminar duplicados
+                $unique_movies = array();
+                foreach ( $movies as $movie ) {
+                    if ( ! isset( $unique_movies[ $movie['id'] ] ) ) {
+                        $unique_movies[ $movie['id'] ] = $movie;
+                    }
+                }
+
+                foreach ( $unique_movies as $movie ) {
+                    if ( empty( $movie['poster_path'] ) ) {
+                        continue;
+                    }
+
+                    $results[] = array(
+                        'id'    => $movie['id'],
+                        'title' => isset( $movie['title'] ) ? $movie['title'] : $movie['name'],
+                        'image' => 'https://image.tmdb.org/t/p/w500' . $movie['poster_path'],
+                        'year'  => isset( $movie['release_date'] ) ? substr( $movie['release_date'], 0, 4 ) : '',
+                    );
+
+                    if ( count( $results ) >= 20 ) {
+                        break;
+                    }
+                }
+            }
+        } else {
+            // Búsqueda normal de películas
+            foreach ( $body['results'] as $movie ) {
+                if ( empty( $movie['poster_path'] ) ) {
+                    continue;
+                }
+
+                $results[] = array(
+                    'id'    => $movie['id'],
+                    'title' => $movie['title'],
+                    'image' => 'https://image.tmdb.org/t/p/w500' . $movie['poster_path'],
+                    'year'  => isset( $movie['release_date'] ) ? substr( $movie['release_date'], 0, 4 ) : '',
+                );
+            }
         }
 
         return $results;
@@ -237,6 +293,11 @@ class QCM_Game_Manager {
 
         $results = array();
         foreach ( $body['results'] as $game ) {
+            // Solo añadir si tiene imagen
+            if ( empty( $game['background_image'] ) ) {
+                continue;
+            }
+
             $results[] = array(
                 'id'    => $game['id'],
                 'title' => $game['name'],
@@ -249,24 +310,18 @@ class QCM_Game_Manager {
     }
 
     /**
-     * Search Google Books API
+     * Search Open Library API
      *
      * @param string $query Search query
      * @return array
      */
-    private function search_google_books( $query ) {
-        $api_key = get_option( 'qcm_google_books_api_key', '' );
-
-        if ( ! $api_key ) {
-            return array();
-        }
-
+    private function search_openlibrary( $query ) {
         $url = add_query_arg(
             array(
-                'key' => $api_key,
-                'q'   => $query,
+                'q'     => $query,
+                'limit' => 20,
             ),
-            'https://www.googleapis.com/books/v1/volumes'
+            'https://openlibrary.org/search.json'
         );
 
         $response = wp_remote_get( $url );
@@ -277,18 +332,22 @@ class QCM_Game_Manager {
 
         $body = json_decode( wp_remote_retrieve_body( $response ), true );
 
-        if ( ! isset( $body['items'] ) ) {
+        if ( ! isset( $body['docs'] ) ) {
             return array();
         }
 
         $results = array();
-        foreach ( $body['items'] as $book ) {
-            $volume_info = $book['volumeInfo'];
+        foreach ( $body['docs'] as $book ) {
+            // Solo añadir si tiene cover
+            if ( empty( $book['cover_i'] ) ) {
+                continue;
+            }
+
             $results[] = array(
-                'id'    => $book['id'],
-                'title' => $volume_info['title'],
-                'image' => isset( $volume_info['imageLinks']['thumbnail'] ) ? $volume_info['imageLinks']['thumbnail'] : '',
-                'year'  => isset( $volume_info['publishedDate'] ) ? substr( $volume_info['publishedDate'], 0, 4 ) : '',
+                'id'    => isset( $book['key'] ) ? $book['key'] : uniqid(),
+                'title' => isset( $book['title'] ) ? $book['title'] : '',
+                'image' => 'https://covers.openlibrary.org/b/id/' . $book['cover_i'] . '-M.jpg',
+                'year'  => isset( $book['first_publish_year'] ) ? $book['first_publish_year'] : '',
             );
         }
 

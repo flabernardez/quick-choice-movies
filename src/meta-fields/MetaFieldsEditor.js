@@ -146,7 +146,7 @@ function APISearchModal({ isOpen, onClose, onSelect }) {
                     options={[
                         { label: __('Movies (TMDB)', 'quick-choice-movies'), value: 'tmdb' },
                         { label: __('Video Games (RAWG)', 'quick-choice-movies'), value: 'rawg' },
-                        { label: __('Books (Google Books)', 'quick-choice-movies'), value: 'google_books' },
+                        { label: __('Books (Open Library)', 'quick-choice-movies'), value: 'openlibrary' },
                     ]}
                     onChange={setApiSource}
                 />
@@ -160,6 +160,11 @@ function APISearchModal({ isOpen, onClose, onSelect }) {
                         }
                     }}
                 />
+                {apiSource === 'tmdb' && (
+                    <p className="description" style={{ fontSize: '12px', marginTop: '-10px' }}>
+                        {__('Try: "robert redford", "spielberg director", movie title, etc.', 'quick-choice-movies')}
+                    </p>
+                )}
                 <Button
                     variant="primary"
                     onClick={handleSearch}
@@ -236,7 +241,7 @@ export default function MetaFieldsEditor() {
                 setItems([]);
             }
         }
-    }, []);
+    }, [choiceItems]); // AÑADE choiceItems como dependencia
 
     // Save items to meta whenever they change
     useEffect(() => {

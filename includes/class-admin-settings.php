@@ -87,12 +87,12 @@ class QCM_Admin_Settings {
             'qcm_api_settings'
         );
 
-        // Google Books API Key
-        register_setting( 'qcm_settings', 'qcm_google_books_api_key' );
+        // Open Library (reemplaza Google Books)
+        register_setting( 'qcm_settings', 'qcm_openlibrary_enabled' );
         add_settings_field(
-            'qcm_google_books_api_key',
-            __( 'Google Books API Key', 'quick-choice-movies' ),
-            array( $this, 'google_books_api_key_callback' ),
+            'qcm_openlibrary_enabled',
+            __( 'Enable Open Library (Books)', 'quick-choice-movies' ),
+            array( $this, 'openlibrary_enabled_callback' ),
             'qcm-settings',
             'qcm_api_settings'
         );
@@ -157,14 +157,14 @@ class QCM_Admin_Settings {
     }
 
     /**
-     * Google Books API Key field callback
+     * Open Library enabled field callback
      */
-    public function google_books_api_key_callback() {
-        $value = get_option( 'qcm_google_books_api_key', '' );
-        echo '<input type="text" name="qcm_google_books_api_key" value="' . esc_attr( $value ) . '" class="regular-text" />';
+    public function openlibrary_enabled_callback() {
+        $value = get_option( 'qcm_openlibrary_enabled', 'yes' );
+        echo '<input type="checkbox" name="qcm_openlibrary_enabled" value="yes" ' . checked( $value, 'yes', false ) . ' />';
         echo '<p class="description">' . sprintf(
-                __( 'Get your API key from <a href="%s" target="_blank">Google Cloud Console</a>', 'quick-choice-movies' ),
-                'https://console.cloud.google.com/apis/credentials'
+                __( 'Open Library is free and does not require an API key. <a href="%s" target="_blank">Learn more</a>', 'quick-choice-movies' ),
+                'https://openlibrary.org/developers/api'
             ) . '</p>';
     }
 
