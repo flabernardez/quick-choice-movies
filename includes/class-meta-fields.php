@@ -40,6 +40,7 @@ class QCM_Meta_Fields {
         add_action( 'init', array( $this, 'register_meta_fields' ) );
         add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue_editor_assets' ) );
         add_action( 'add_meta_boxes', array( $this, 'add_meta_box' ) );
+        add_action( 'save_post', array( $this, 'save_meta_box' ) ); // AÑADE ESTA LÍNEA
     }
 
     /**
@@ -61,6 +62,29 @@ class QCM_Meta_Fields {
      */
     public function render_meta_box( $post ) {
         echo '<div id="qcm-meta-fields-root"></div>';
+    }
+
+    /**
+     * Save meta box data
+     */
+    public function save_meta_box( $post_id ) {
+        // Check autosave
+        if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+            return;
+        }
+
+        // Check permissions
+        if ( ! current_user_can( 'edit_post', $post_id ) ) {
+            return;
+        }
+
+        // Check post type
+        if ( 'quick_choice' !== get_post_type( $post_id ) ) {
+            return;
+        }
+
+        // Meta is saved via REST API from React component
+        // This is just a placeholder to ensure the meta box is recognized
     }
 
     /**

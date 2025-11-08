@@ -215,6 +215,7 @@ function APISearchModal({ isOpen, onClose, onSelect }) {
 export default function MetaFieldsEditor() {
     const [isAPIModalOpen, setIsAPIModalOpen] = useState(false);
     const [items, setItems] = useState([]);
+    const [isLoaded, setIsLoaded] = useState(false);
 
     const sensors = useSensors(
         useSensor(PointerSensor),
@@ -233,28 +234,33 @@ export default function MetaFieldsEditor() {
 
     // Load items from meta on mount
     useEffect(() => {
-        if (choiceItems) {
+        if (!isLoaded && choiceItems) {
             try {
                 const parsed = JSON.parse(choiceItems);
-                setItems(Array.isArray(parsed) ? parsed : []);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    setItems(parsed);
+                }
             } catch (e) {
-                setItems([]);
+                console.error('Error parsing choice items:', e);
             }
+            setIsLoaded(true);
         }
-    }, [choiceItems]); // AÑADE choiceItems como dependencia
+    }, [choiceItems, isLoaded]);
 
     // Save items to meta whenever they change
     useEffect(() => {
-        const timeout = setTimeout(() => {
-            editPost({
-                meta: {
-                    qcm_choice_items: JSON.stringify(items),
-                },
-            });
-        }, 500);
+        if (isLoaded) {
+            const timeout = setTimeout(() => {
+                editPost({
+                    meta: {
+                        qcm_choice_items: JSON.stringify(items),
+                    },
+                });
+            }, 500);
 
-        return () => clearTimeout(timeout);
-    }, [items, editPost]);
+            return () => clearTimeout(timeout);
+        }
+    }, [items, editPost, isLoaded]);
 
     const handleAddItem = () => {
         setItems([
