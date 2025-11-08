@@ -34,6 +34,9 @@
         async loadItems() {
             this.container.innerHTML = '<div class="qcm-loading">Loading...</div>';
 
+            console.log('QCM: Loading items for post ID:', this.choiceListId);
+            console.log('QCM: Ajax URL:', qcmGame.ajaxUrl);
+
             try {
                 const response = await fetch(qcmGame.ajaxUrl, {
                     method: 'POST',
@@ -49,17 +52,23 @@
 
                 const data = await response.json();
 
+                console.log('QCM: Response data:', data);
+
                 if (data.success && data.data.items) {
                     this.allItems = data.data.items;
                     this.remainingItems = [...this.allItems];
                     this.shuffleArray(this.remainingItems);
+
+                    console.log('QCM: Loaded items:', this.allItems);
+
                     this.renderGame();
                 } else {
-                    this.container.innerHTML = '<div class="qcm-loading">Error loading game.</div>';
+                    console.error('QCM: Error - No items or unsuccessful response:', data);
+                    this.container.innerHTML = '<div class="qcm-loading">Error: ' + (data.data?.message || 'No choices found') + '</div>';
                 }
             } catch (error) {
-                console.error('Error loading game:', error);
-                this.container.innerHTML = '<div class="qcm-loading">Error loading game.</div>';
+                console.error('QCM: Fetch error:', error);
+                this.container.innerHTML = '<div class="qcm-loading">Error: ' + error.message + '</div>';
             }
         }
 

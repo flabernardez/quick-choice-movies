@@ -83,14 +83,21 @@ class QCM_Game_Manager {
      * @return bool
      */
     private function should_load_assets() {
+        // Always load on quick_choice post type pages
+        if ( is_singular( 'quick_choice' ) ) {
+            return true;
+        }
+
         // Check if the qcm-game block is present in the content
         if ( is_singular() ) {
             global $post;
-            if ( has_block( 'qcm/game-block', $post ) ) {
+            if ( $post && has_block( 'qcm/game-block', $post ) ) {
                 return true;
             }
         }
-        return false;
+
+        // Load on all pages and posts as fallback (for testing)
+        return is_singular();
     }
 
     /**
