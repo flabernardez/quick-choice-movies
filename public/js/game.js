@@ -8,6 +8,8 @@
             this.allItems = [];
             this.remainingItems = [];
             this.currentPair = [];
+            this.chosenPosition = null; // null, 0 (left), or 1 (right)
+            this.currentChosen = null; // The currently chosen item
             this.gameId = `qcm_game_${this.choiceListId}`;
 
             this.init();
@@ -18,7 +20,6 @@
         }
 
         async loadGame() {
-            // Check if there's a saved game state
             const savedState = this.loadFromCookie();
 
             if (savedState) {
@@ -26,16 +27,12 @@
                 this.remainingItems = savedState.remainingItems;
                 this.renderGame();
             } else {
-                // Load items from API
                 await this.loadItems();
             }
         }
 
         async loadItems() {
             this.container.innerHTML = '<div class="qcm-loading">Loading...</div>';
-
-            console.log('QCM: Loading items for post ID:', this.choiceListId);
-            console.log('QCM: Ajax URL:', qcmGame.ajaxUrl);
 
             try {
                 const response = await fetch(qcmGame.ajaxUrl, {
@@ -52,22 +49,15 @@
 
                 const data = await response.json();
 
-                console.log('QCM: Response data:', data);
-
                 if (data.success && data.data.items) {
                     this.allItems = data.data.items;
                     this.remainingItems = [...this.allItems];
                     this.shuffleArray(this.remainingItems);
-
-                    console.log('QCM: Loaded items:', this.allItems);
-
                     this.renderGame();
                 } else {
-                    console.error('QCM: Error - No items or unsuccessful response:', data);
                     this.container.innerHTML = '<div class="qcm-loading">Error: ' + (data.data?.message || 'No choices found') + '</div>';
                 }
             } catch (error) {
-                console.error('QCM: Fetch error:', error);
                 this.container.innerHTML = '<div class="qcm-loading">Error: ' + error.message + '</div>';
             }
         }
@@ -83,10 +73,29 @@
                 return;
             }
 
-            this.currentPair = [
-                this.remainingItems[0],
-                this.remainingItems[1]
-            ];
+            // If we have a chosen item, keep it in its position
+            if (this.currentChosen && this.chosenPosition !== null) {
+                // Get next opponent
+                const nextOpponent = this.remainingItems.find(item => item.id !== this.currentChosen.id);
+
+                if (!nextOpponent) {
+                    this.renderWinner();
+                    return;
+                }
+
+                // Keep chosen in same position
+                if (this.chosenPosition === 0) {
+                    this.currentPair = [this.currentChosen, nextOpponent];
+                } else {
+                    this.currentPair = [nextOpponent, this.currentChosen];
+                }
+            } else {
+                // First comparison - just use first two items
+                this.currentPair = [
+                    this.remainingItems[0],
+                    this.remainingItems[1]
+                ];
+            }
 
             const html = `
                 <div class="qcm-game-container">
@@ -96,10 +105,10 @@
                     </div>
                     <div class="qcm-game-controls">
                         <button class="qcm-button qcm-button--secondary qcm-reset-button">
-                            Reset Game
+                            Comienza de nuevo
                         </button>
                         <button class="qcm-button qcm-button--primary qcm-save-button">
-                            Save Progress
+                            Guardar
                         </button>
                     </div>
                 </div>
@@ -125,12 +134,12 @@
                 <div class="qcm-winner">
                     <div class="qcm-winner__choice">
                         <img src="${winner.image}" alt="${winner.title}">
-                        <h3>${winner.title}</h3>
                     </div>
+                    <h3>${winner.title}</h3>
                     <h2 class="qcm-winner__title">🏆 ¡Ganadora! 🏆</h2>
                     <div class="qcm-game-controls">
                         <button class="qcm-button qcm-button--primary qcm-reset-button">
-                            Play Again
+                            Jugar de nuevo
                         </button>
                     </div>
                 </div>
@@ -142,19 +151,16 @@
         }
 
         attachEventListeners() {
-            // Choice click handlers
             const choices = this.container.querySelectorAll('.qcm-choice');
             choices.forEach((choice, index) => {
                 choice.addEventListener('click', () => this.handleChoice(index));
             });
 
-            // Reset button
             const resetButton = this.container.querySelector('.qcm-reset-button');
             if (resetButton) {
                 resetButton.addEventListener('click', () => this.resetGame());
             }
 
-            // Save button
             const saveButton = this.container.querySelector('.qcm-save-button');
             if (saveButton) {
                 saveButton.addEventListener('click', () => this.saveGame());
@@ -165,35 +171,49 @@
             const chosen = this.currentPair[chosenIndex];
             const notChosen = this.currentPair[chosenIndex === 0 ? 1 : 0];
 
-            // Remove both from remaining items
+            console.log('🎯 Clicked:', chosenIndex === 0 ? 'LEFT' : 'RIGHT');
+            console.log('✅ Stays:', chosen.title);
+            console.log('❌ Removed:', notChosen.title);
+
+            // Store chosen item and its position
+            this.currentChosen = chosen;
+            this.chosenPosition = chosenIndex;
+
+            console.log('📍 Position locked:', chosenIndex === 0 ? 'LEFT' : 'RIGHT');
+
+            // Remove the NOT chosen
             this.remainingItems = this.remainingItems.filter(
-                item => item.id !== chosen.id && item.id !== notChosen.id
+                item => item.id !== notChosen.id
             );
 
-            // Add chosen back to the end
-            this.remainingItems.push(chosen);
+            console.log('📊 Remaining:', this.remainingItems.length);
 
-            // Render next pair
+            // Check winner
+            if (this.remainingItems.length === 1) {
+                this.renderWinner();
+                return;
+            }
+
+            // Render next comparison (renderGame will handle positioning)
             this.renderGame();
         }
 
         resetGame() {
             this.remainingItems = [...this.allItems];
             this.shuffleArray(this.remainingItems);
+            this.currentChosen = null;
+            this.chosenPosition = null;
             this.clearCookie();
             this.renderGame();
         }
 
         saveGame() {
             this.saveToCookie();
-
-            // Show feedback
             const saveButton = this.container.querySelector('.qcm-save-button');
             if (saveButton) {
                 const originalText = saveButton.textContent;
-                saveButton.textContent = 'Saved!';
+                saveButton.textContent = 'Guardado!';
                 saveButton.disabled = true;
-
                 setTimeout(() => {
                     saveButton.textContent = originalText;
                     saveButton.disabled = false;
@@ -206,12 +226,10 @@
                 allItems: this.allItems,
                 remainingItems: this.remainingItems,
             };
-
             const expirationDays = parseInt(qcmGame.cookieExpiration);
             const date = new Date();
             date.setTime(date.getTime() + (expirationDays * 24 * 60 * 60 * 1000));
             const expires = 'expires=' + date.toUTCString();
-
             document.cookie = `${this.gameId}=${encodeURIComponent(JSON.stringify(state))};${expires};path=/`;
         }
 
@@ -248,7 +266,6 @@
         }
     }
 
-    // Initialize all games on page
     $(document).ready(function() {
         $('.qcm-game-block').each(function() {
             new QuickChoiceGame(this);

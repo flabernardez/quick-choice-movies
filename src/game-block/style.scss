@@ -24,19 +24,18 @@
   flex: 1;
   max-width: 400px;
   cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border-radius: 8px;
-  overflow: hidden;
-
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-  }
 
   &__image {
+    border-radius: 8px;
     width: 100%;
     aspect-ratio: 2/3;
     object-fit: cover;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    }
   }
 
   &__title {
@@ -49,7 +48,6 @@
 
 .qcm-winner {
   text-align: center;
-  padding: 40px 20px;
 
   &__title {
     font-size: 32px;
@@ -60,14 +58,13 @@
   &__choice {
     display: inline-block;
     max-width: 400px;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 
     img {
       width: 100%;
       aspect-ratio: 2/3;
       object-fit: cover;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      border-radius: 8px;
     }
 
     h3 {
