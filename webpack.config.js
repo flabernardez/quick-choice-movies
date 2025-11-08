@@ -6,6 +6,7 @@ module.exports = {
     entry: {
         'game-block/index': path.resolve(process.cwd(), 'src/game-block', 'index.js'),
         'meta-fields/index': path.resolve(process.cwd(), 'src/meta-fields', 'index.js'),
+        'list-block/index': path.resolve(process.cwd(), 'src/list-block', 'index.js'),
     },
     output: {
         filename: '[name].js',

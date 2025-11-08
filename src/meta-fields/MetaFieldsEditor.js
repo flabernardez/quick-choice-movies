@@ -9,14 +9,12 @@ import {
     SelectControl,
     Spinner,
     Card,
-    CardHeader,
     CardBody,
     CardFooter,
     Modal,
     SearchControl,
+    Notice,
 } from '@wordpress/components';
-import { useSelect, useDispatch } from '@wordpress/data';
-import { store as editorStore } from '@wordpress/editor';
 import { MediaUpload, MediaUploadCheck } from '@wordpress/block-editor';
 import { trash, dragHandle } from '@wordpress/icons';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
@@ -215,7 +213,8 @@ function APISearchModal({ isOpen, onClose, onSelect }) {
 export default function MetaFieldsEditor() {
     const [isAPIModalOpen, setIsAPIModalOpen] = useState(false);
     const [items, setItems] = useState([]);
-    const [isLoaded, setIsLoaded] = useState(false);
+    const [saveStatus, setSaveStatus] = useState('');
+    const [saveMessage, setSaveMessage] = useState('');
 
     const sensors = useSensors(
         useSensor(PointerSensor),
@@ -224,43 +223,82 @@ export default function MetaFieldsEditor() {
         })
     );
 
-    // Get current post meta
-    const choiceItems = useSelect((select) => {
-        const meta = select(editorStore).getEditedPostAttribute('meta');
-        return meta?.qcm_choice_items || '';
-    }, []);
-
-    const { editPost } = useDispatch(editorStore);
-
-    // Load items from meta on mount
+    // Load initial data
     useEffect(() => {
-        if (!isLoaded && choiceItems) {
+        console.log('🔵 Loading initial data');
+        console.log('🔵 qcmMetaFields:', qcmMetaFields);
+
+        if (qcmMetaFields?.currentMeta) {
             try {
-                const parsed = JSON.parse(choiceItems);
-                if (Array.isArray(parsed) && parsed.length > 0) {
+                const parsed = JSON.parse(qcmMetaFields.currentMeta);
+                if (Array.isArray(parsed)) {
+                    console.log('✅ Loaded', parsed.length, 'items');
                     setItems(parsed);
                 }
             } catch (e) {
-                console.error('Error parsing choice items:', e);
+                console.error('❌ Error parsing meta:', e);
             }
-            setIsLoaded(true);
         }
-    }, [choiceItems, isLoaded]);
+    }, []);
 
-    // Save items to meta whenever they change
+    // Save function using AJAX
+    const saveItems = async (itemsToSave) => {
+        console.log('💾 Saving', itemsToSave.length, 'items via AJAX');
+        setSaveStatus('saving');
+        setSaveMessage('Guardando...');
+
+        const jsonString = JSON.stringify(itemsToSave);
+        console.log('💾 JSON to save:', jsonString.substring(0, 100));
+
+        try {
+            const formData = new URLSearchParams();
+            formData.append('action', 'qcm_save_items');
+            formData.append('nonce', qcmMetaFields.nonce);
+            formData.append('post_id', qcmMetaFields.postId);
+            formData.append('items', jsonString);
+
+            const response = await fetch(qcmMetaFields.ajaxUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: formData.toString(),
+            });
+
+            const data = await response.json();
+            console.log('💾 Save response:', data);
+
+            if (data.success) {
+                setSaveStatus('success');
+                setSaveMessage(`✓ ${itemsToSave.length} items guardados`);
+                console.log('✅ Save successful!', data.data);
+
+                setTimeout(() => {
+                    setSaveStatus('');
+                    setSaveMessage('');
+                }, 3000);
+            } else {
+                setSaveStatus('error');
+                setSaveMessage('❌ Error: ' + (data.data?.message || 'Unknown error'));
+                console.error('❌ Save failed:', data);
+            }
+        } catch (error) {
+            setSaveStatus('error');
+            setSaveMessage('❌ Error de red');
+            console.error('❌ Network error:', error);
+        }
+    };
+
+    // Auto-save when items change
     useEffect(() => {
-        if (isLoaded) {
-            const timeout = setTimeout(() => {
-                editPost({
-                    meta: {
-                        qcm_choice_items: JSON.stringify(items),
-                    },
-                });
-            }, 500);
+        if (items.length === 0) return;
 
-            return () => clearTimeout(timeout);
-        }
-    }, [items, editPost, isLoaded]);
+        const timeout = setTimeout(() => {
+            saveItems(items);
+        }, 2000); // Wait 2 seconds after last change
+
+        return () => clearTimeout(timeout);
+    }, [items]);
 
     const handleAddItem = () => {
         setItems([
@@ -291,7 +329,6 @@ export default function MetaFieldsEditor() {
             setItems((items) => {
                 const oldIndex = items.findIndex((item) => item.id === active.id);
                 const newIndex = items.findIndex((item) => item.id === over.id);
-
                 return arrayMove(items, oldIndex, newIndex);
             });
         }
@@ -302,12 +339,34 @@ export default function MetaFieldsEditor() {
         setIsAPIModalOpen(false);
     };
 
+    const handleManualSave = () => {
+        saveItems(items);
+    };
+
     return (
         <Panel>
             <PanelBody title={__('Quick Choice Items', 'quick-choice-movies')} initialOpen={true}>
+                {saveStatus === 'saving' && (
+                    <Notice status="info" isDismissible={false}>
+                        {saveMessage}
+                    </Notice>
+                )}
+                {saveStatus === 'success' && (
+                    <Notice status="success" isDismissible={false}>
+                        {saveMessage}
+                    </Notice>
+                )}
+                {saveStatus === 'error' && (
+                    <Notice status="error" isDismissible={false}>
+                        {saveMessage}
+                    </Notice>
+                )}
+
                 <PanelRow>
                     <p className="description">
-                        {__('Add and manage the items that will appear in your quick choice game.', 'quick-choice-movies')}
+                        <strong>{items.length}</strong> {__('items', 'quick-choice-movies')}
+                        {' • '}
+                        {__('Se guarda automáticamente', 'quick-choice-movies')}
                     </p>
                 </PanelRow>
 
@@ -323,6 +382,13 @@ export default function MetaFieldsEditor() {
                         onClick={() => setIsAPIModalOpen(true)}
                     >
                         {__('Search API', 'quick-choice-movies')}
+                    </Button>
+                    <Button
+                        variant="primary"
+                        onClick={handleManualSave}
+                        disabled={items.length === 0}
+                    >
+                        {__('💾 Guardar Ahora', 'quick-choice-movies')}
                     </Button>
                 </PanelRow>
 

@@ -123,11 +123,11 @@
 
             const html = `
                 <div class="qcm-winner">
-                    <h2 class="qcm-winner__title">🏆 Winner! 🏆</h2>
                     <div class="qcm-winner__choice">
                         <img src="${winner.image}" alt="${winner.title}">
                         <h3>${winner.title}</h3>
                     </div>
+                    <h2 class="qcm-winner__title">🏆 ¡Ganadora! 🏆</h2>
                     <div class="qcm-game-controls">
                         <button class="qcm-button qcm-button--primary qcm-reset-button">
                             Play Again

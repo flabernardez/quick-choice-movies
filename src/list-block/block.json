@@ -1,0 +1,20 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "qcm/list-block",
+  "version": "0.1.0",
+  "title": "Quick Choice List",
+  "category": "widgets",
+  "icon": "list-view",
+  "description": "Display the list of items from this Quick Choice",
+  "example": {},
+  "supports": {
+    "html": false,
+    "align": true
+  },
+  "attributes": {},
+  "textdomain": "quick-choice-movies",
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css",
+  "style": "file:./style-index.css"
+}
