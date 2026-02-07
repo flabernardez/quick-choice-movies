@@ -12,11 +12,20 @@ import { trash, plus } from '@wordpress/icons';
 import ItemManager from '../shared/components/ItemManager';
 
 export default function TierListEditor() {
-    const [tiers, setTiers] = useState([]);
+    const [tiers, setTiersRaw] = useState([]);
     const [saveStatus, setSaveStatus] = useState('');
     const [saveMessage, setSaveMessage] = useState('');
     const [initialized, setInitialized] = useState(false);
     const itemsRef = useRef([]);
+
+    // Wrapper: always assign IDs based on position
+    const setTiers = (newTiers) => {
+        const normalized = (Array.isArray(newTiers) ? newTiers : []).map((tier, index) => ({
+            ...tier,
+            id: String(index),
+        }));
+        setTiersRaw(normalized);
+    };
 
     // Load initial tiers
     useEffect(() => {
@@ -104,8 +113,8 @@ export default function TierListEditor() {
     };
 
     const handleAddTier = () => {
-        const id = String.fromCharCode(65 + tiers.length); // A, B, C...
-        setTiers([...tiers, { id, label: id, color: '#cccccc' }]);
+        const label = String.fromCharCode(65 + tiers.length); // A, B, C... for display only
+        setTiers([...tiers, { id: '', label, color: '#cccccc' }]);
     };
 
     const handleResetTiers = () => {
@@ -144,7 +153,7 @@ export default function TierListEditor() {
                     <div className="qcm-tiers-config">
                         {tiers.map((tier, index) => (
                             <div
-                                key={tier.id}
+                                key={index}
                                 className="qcm-tier-config"
                                 style={{ borderLeftColor: tier.color }}
                             >

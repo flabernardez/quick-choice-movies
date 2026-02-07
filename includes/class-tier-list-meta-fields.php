@@ -132,7 +132,7 @@ class QCM_Tier_List_Meta_Fields {
             return;
         }
 
-        $asset_path = QCM_PLUGIN_DIR . 'build/tier-list-meta-fields/index.asset.php';
+        $asset_path = QCM_PLUGIN_DIR . 'build/meta-fields/index.asset.php';
         if ( ! file_exists( $asset_path ) ) {
             return;
         }
@@ -140,7 +140,7 @@ class QCM_Tier_List_Meta_Fields {
 
         wp_enqueue_script(
             'qcm-tier-list-meta-fields',
-            QCM_PLUGIN_URL . 'build/tier-list-meta-fields/index.js',
+            QCM_PLUGIN_URL . 'build/meta-fields/index.js',
             $asset_file['dependencies'],
             $asset_file['version'],
             true
@@ -148,7 +148,7 @@ class QCM_Tier_List_Meta_Fields {
 
         wp_enqueue_style(
             'qcm-tier-list-meta-fields',
-            QCM_PLUGIN_URL . 'build/tier-list-meta-fields/index.css',
+            QCM_PLUGIN_URL . 'build/meta-fields/index.css',
             array( 'wp-components' ),
             $asset_file['version']
         );

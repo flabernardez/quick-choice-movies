@@ -94,14 +94,15 @@
         }
 
         renderTierRow(tier) {
-            const tierItems = this.items.filter(item => this.rankings[item.id] === tier.id);
+            const tierId = String(tier.id);
+            const tierItems = this.items.filter(item => this.rankings[String(item.id)] === tierId);
 
             return `
                 <div class="qcm-tier-row">
                     <div class="qcm-tier-label" style="background-color: ${tier.color}">
                         ${tier.label}
                     </div>
-                    <div class="qcm-tier-items" data-tier="${tier.id}">
+                    <div class="qcm-tier-items" data-tier="${tierId}">
                         ${tierItems.map(item => this.renderItem(item)).join('')}
                     </div>
                 </div>
@@ -109,7 +110,8 @@
         }
 
         renderUnrankedItems() {
-            const unrankedItems = this.items.filter(item => !this.rankings[item.id]);
+            const rankedIds = new Set(Object.keys(this.rankings).filter(k => this.rankings[k]));
+            const unrankedItems = this.items.filter(item => !rankedIds.has(String(item.id)));
             return unrankedItems.map(item => this.renderItem(item)).join('');
         }
 
@@ -187,13 +189,8 @@
                 this.rankings[itemId] = tierId;
             }
 
-            // Move the item element
-            if (this.draggedItem) {
-                e.currentTarget.appendChild(this.draggedItem);
-            }
-
-            // Auto-save
             this.saveToStorage();
+            this.render();
         }
 
         save() {
