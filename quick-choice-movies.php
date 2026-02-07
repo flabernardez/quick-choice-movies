@@ -4,7 +4,7 @@
  * Description:       A quick choice movies game
  * Requires at least: 6.6
  * Requires PHP:      7.0
- * Version:           0.1.0
+ * Version:           2.1.0
  * Author:            Flavia Bernárdez Rodríguez
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -29,10 +29,12 @@ function qcm_load_modules() {
     require_once QCM_PLUGIN_DIR . 'includes/class-cpt-quick-choices.php';
     require_once QCM_PLUGIN_DIR . 'includes/class-meta-fields.php';
     require_once QCM_PLUGIN_DIR . 'includes/class-admin-settings.php';
+    require_once QCM_PLUGIN_DIR . 'includes/class-api-search.php';
     require_once QCM_PLUGIN_DIR . 'includes/class-game-manager.php';
     require_once QCM_PLUGIN_DIR . 'includes/class-cpt-tier-lists.php';
     require_once QCM_PLUGIN_DIR . 'includes/class-tier-list-meta-fields.php';
 
+    QCM_API_Search::get_instance();
     QCM_CPT_Quick_Choices::get_instance();
     QCM_Meta_Fields::get_instance();
     QCM_Admin_Settings::get_instance();
