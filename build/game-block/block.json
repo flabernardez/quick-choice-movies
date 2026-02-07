@@ -13,6 +13,10 @@
     "align": true
   },
   "attributes": {
+    "gameType": {
+      "type": "string",
+      "default": "quick_choice"
+    },
     "choiceListId": {
       "type": "number",
       "default": 0

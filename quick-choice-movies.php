@@ -30,11 +30,15 @@ function qcm_load_modules() {
     require_once QCM_PLUGIN_DIR . 'includes/class-meta-fields.php';
     require_once QCM_PLUGIN_DIR . 'includes/class-admin-settings.php';
     require_once QCM_PLUGIN_DIR . 'includes/class-game-manager.php';
+    require_once QCM_PLUGIN_DIR . 'includes/class-cpt-tier-lists.php';
+    require_once QCM_PLUGIN_DIR . 'includes/class-tier-list-meta-fields.php';
 
     QCM_CPT_Quick_Choices::get_instance();
     QCM_Meta_Fields::get_instance();
     QCM_Admin_Settings::get_instance();
     QCM_Game_Manager::get_instance();
+    QCM_CPT_Tier_Lists::get_instance();
+    QCM_Tier_List_Meta_Fields::get_instance();
 }
 add_action( 'plugins_loaded', 'qcm_load_modules' );
 

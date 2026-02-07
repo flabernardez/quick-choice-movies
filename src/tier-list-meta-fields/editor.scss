@@ -1,0 +1,150 @@
+.qcm-tiers-config {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 15px;
+}
+
+.qcm-tier-config {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  background: #f9f9f9;
+  border-radius: 4px;
+  border-left: 4px solid #ccc;
+
+  &__color {
+    width: 30px;
+    height: 30px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 2px solid rgba(0, 0, 0, 0.1);
+
+    &:hover {
+      border-color: rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  &__label {
+    width: 60px;
+
+    input {
+      text-align: center;
+      font-weight: bold;
+    }
+  }
+}
+
+.qcm-tier-items {
+  margin-top: 20px;
+}
+
+.qcm-tier-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  padding: 15px;
+  margin-bottom: 15px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+
+  &__drag {
+    flex-shrink: 0;
+    cursor: grab;
+
+    &:active {
+      cursor: grabbing;
+    }
+  }
+
+  &__image {
+    flex-shrink: 0;
+    width: 80px;
+    height: 80px;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+
+    &-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f0f0f0;
+      border: 2px dashed #ddd;
+      border-radius: 4px;
+      font-size: 11px;
+      color: #999;
+      text-align: center;
+    }
+  }
+
+  &__content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  &__actions {
+    flex-shrink: 0;
+  }
+}
+
+// Reuse API modal styles
+.qcm-api-search-modal {
+  &__controls {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+  }
+
+  &__results {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+    max-height: 500px;
+    overflow-y: auto;
+  }
+}
+
+.qcm-api-result {
+  &__content {
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+  }
+
+  &__image {
+    width: 60px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  &__info {
+    flex: 1;
+
+    h4 {
+      margin: 0 0 5px;
+      font-size: 14px;
+    }
+
+    p {
+      margin: 0;
+      font-size: 12px;
+      color: #666;
+    }
+  }
+}
