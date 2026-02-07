@@ -27,7 +27,7 @@
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   border-radius: 8px;
   overflow: hidden;
-  background: #fff;
+  background: rgba(7, 7, 7, 0.66);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
   &:hover {
@@ -46,7 +46,6 @@
     font-size: 16px;
     font-weight: 600;
     text-align: center;
-    background: #f8f8f8;
   }
 }
 
