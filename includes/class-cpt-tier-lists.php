@@ -103,6 +103,7 @@ class QCM_CPT_Tier_Lists {
             'capability_type'       => 'post',
             'show_in_rest'          => true,
             'rest_base'             => 'tier-lists',
+            'rewrite'               => array( 'slug' => 'tier-list' ),
         );
 
         register_post_type( self::POST_TYPE, $args );

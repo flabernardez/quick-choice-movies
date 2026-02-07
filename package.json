@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "description": "A quick choice movies game for WordPress",
   "scripts": {
-    "build": "wp-scripts build",
+    "build:scss": "sass public/css/style.scss public/css/style.css --no-source-map",
+    "build": "wp-scripts build && npm run build:scss",
     "start": "wp-scripts start",
     "lint:js": "wp-scripts lint-js",
     "format": "wp-scripts format"

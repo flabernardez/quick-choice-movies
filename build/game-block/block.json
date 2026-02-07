@@ -3,7 +3,7 @@
   "apiVersion": 3,
   "name": "qcm/game-block",
   "version": "0.1.0",
-  "title": "Quick Choice Game",
+  "title": "Game",
   "category": "widgets",
   "icon": "images-alt2",
   "description": "Display a quick choice game",

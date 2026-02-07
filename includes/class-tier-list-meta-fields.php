@@ -132,7 +132,11 @@ class QCM_Tier_List_Meta_Fields {
             return;
         }
 
-        $asset_file = include( QCM_PLUGIN_DIR . 'build/tier-list-meta-fields/index.asset.php' );
+        $asset_path = QCM_PLUGIN_DIR . 'build/tier-list-meta-fields/index.asset.php';
+        if ( ! file_exists( $asset_path ) ) {
+            return;
+        }
+        $asset_file = include( $asset_path );
 
         wp_enqueue_script(
             'qcm-tier-list-meta-fields',

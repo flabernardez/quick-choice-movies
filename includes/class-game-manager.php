@@ -40,6 +40,8 @@ class QCM_Game_Manager {
         add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_public_assets' ) );
         add_action( 'wp_ajax_qcm_get_choices', array( $this, 'ajax_get_choices' ) );
         add_action( 'wp_ajax_nopriv_qcm_get_choices', array( $this, 'ajax_get_choices' ) );
+        add_action( 'wp_ajax_qcm_get_tier_list', array( $this, 'ajax_get_tier_list' ) );
+        add_action( 'wp_ajax_nopriv_qcm_get_tier_list', array( $this, 'ajax_get_tier_list' ) );
     }
 
     /**
@@ -59,8 +61,8 @@ class QCM_Game_Manager {
         );
 
         wp_enqueue_style(
-            'qcm-game',
-            QCM_PLUGIN_URL . 'public/css/game.css',
+            'qcm-public',
+            QCM_PLUGIN_URL . 'public/css/style.css',
             array(),
             QCM_VERSION
         );
@@ -68,6 +70,25 @@ class QCM_Game_Manager {
         wp_localize_script(
             'qcm-game',
             'qcmGame',
+            array(
+                'ajaxUrl'          => admin_url( 'admin-ajax.php' ),
+                'nonce'            => wp_create_nonce( 'qcm_game' ),
+                'cookieExpiration' => get_option( 'qcm_cookie_expiration', 30 ),
+            )
+        );
+
+        // Tier List assets
+        wp_enqueue_script(
+            'qcm-tierlist-game',
+            QCM_PLUGIN_URL . 'public/js/tierlist-game.js',
+            array( 'jquery' ),
+            QCM_VERSION,
+            true
+        );
+
+        wp_localize_script(
+            'qcm-tierlist-game',
+            'qcmTierList',
             array(
                 'ajaxUrl'          => admin_url( 'admin-ajax.php' ),
                 'nonce'            => wp_create_nonce( 'qcm_game' ),
@@ -124,5 +145,36 @@ class QCM_Game_Manager {
         }
 
         wp_send_json_success( array( 'items' => $items ) );
+    }
+
+    /**
+     * AJAX handler to get tier list data
+     */
+    public function ajax_get_tier_list() {
+        check_ajax_referer( 'qcm_game', 'nonce' );
+
+        $post_id = isset( $_POST['post_id'] ) ? intval( $_POST['post_id'] ) : 0;
+
+        if ( ! $post_id ) {
+            wp_send_json_error( array( 'message' => __( 'Invalid post ID', 'quick-choice-movies' ) ) );
+        }
+
+        $items_json = get_post_meta( $post_id, 'qcm_tier_list_items', true );
+        $tiers_json = get_post_meta( $post_id, 'qcm_tier_list_tiers', true );
+
+        $items = json_decode( $items_json, true );
+        if ( ! is_array( $items ) || empty( $items ) ) {
+            wp_send_json_error( array( 'message' => __( 'No items found', 'quick-choice-movies' ) ) );
+        }
+
+        $tiers = json_decode( $tiers_json, true );
+        if ( ! is_array( $tiers ) || empty( $tiers ) ) {
+            $tiers = QCM_Tier_List_Meta_Fields::DEFAULT_TIERS;
+        }
+
+        wp_send_json_success( array(
+            'items' => $items,
+            'tiers' => $tiers,
+        ) );
     }
 }

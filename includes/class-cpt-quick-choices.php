@@ -103,6 +103,7 @@ class QCM_CPT_Quick_Choices {
             'capability_type'       => 'post',
             'show_in_rest'          => true,
             'rest_base'             => 'quick-choices',
+            'rewrite'               => array( 'slug' => 'quick-choice' ),
         );
 
         register_post_type( self::POST_TYPE, $args );

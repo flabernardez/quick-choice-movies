@@ -109,6 +109,15 @@
     border-bottom: 1px solid #ddd;
   }
 
+  &__row {
+    display: flex;
+    gap: 15px;
+
+    > * {
+      flex: 1;
+    }
+  }
+
   &__results {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));

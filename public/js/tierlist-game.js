@@ -227,20 +227,23 @@
                 tiers: this.tiers,
                 rankings: this.rankings,
             };
-            localStorage.setItem(this.gameId, JSON.stringify(state));
+            const days = (qcmTierList && qcmTierList.cookieExpiration) ? parseInt(qcmTierList.cookieExpiration) : 30;
+            const expires = new Date(Date.now() + days * 864e5).toUTCString();
+            document.cookie = this.gameId + '=' + encodeURIComponent(JSON.stringify(state)) + ';expires=' + expires + ';path=/;SameSite=Lax';
         }
 
         loadFromStorage() {
             try {
-                const saved = localStorage.getItem(this.gameId);
-                return saved ? JSON.parse(saved) : null;
+                const match = document.cookie.split('; ').find(c => c.startsWith(this.gameId + '='));
+                if (!match) return null;
+                return JSON.parse(decodeURIComponent(match.split('=').slice(1).join('=')));
             } catch (e) {
                 return null;
             }
         }
 
         clearStorage() {
-            localStorage.removeItem(this.gameId);
+            document.cookie = this.gameId + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;SameSite=Lax';
         }
     }
 

@@ -11,6 +11,18 @@ import {
     SearchControl,
 } from '@wordpress/components';
 
+const LANGUAGE_OPTIONS = [
+    { label: 'English', value: 'en' },
+    { label: 'Español', value: 'es' },
+    { label: 'Français', value: 'fr' },
+    { label: 'Deutsch', value: 'de' },
+    { label: 'Italiano', value: 'it' },
+    { label: 'Português', value: 'pt' },
+    { label: '日本語', value: 'ja' },
+    { label: '한국어', value: 'ko' },
+    { label: '中文', value: 'zh' },
+];
+
 /**
  * API Search Modal Component
  *
@@ -24,6 +36,7 @@ import {
 export default function APISearchModal({ isOpen, onClose, onSelect, ajaxUrl, searchNonce }) {
     const [apiSource, setApiSource] = useState('tmdb');
     const [searchQuery, setSearchQuery] = useState('');
+    const [language, setLanguage] = useState('es');
     const [results, setResults] = useState([]);
     const [isSearching, setIsSearching] = useState(false);
 
@@ -33,17 +46,23 @@ export default function APISearchModal({ isOpen, onClose, onSelect, ajaxUrl, sea
         setIsSearching(true);
 
         try {
+            const params = {
+                action: 'qcm_api_search',
+                nonce: searchNonce,
+                api_source: apiSource,
+                query: searchQuery,
+            };
+
+            if (language) {
+                params.language = language;
+            }
+
             const response = await fetch(ajaxUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: new URLSearchParams({
-                    action: 'qcm_api_search',
-                    nonce: searchNonce,
-                    api_source: apiSource,
-                    query: searchQuery,
-                }),
+                body: new URLSearchParams(params),
             });
 
             const data = await response.json();
@@ -77,16 +96,24 @@ export default function APISearchModal({ isOpen, onClose, onSelect, ajaxUrl, sea
             className="qcm-api-search-modal"
         >
             <div className="qcm-api-search-modal__controls">
-                <SelectControl
-                    label={__('API Source', 'quick-choice-movies')}
-                    value={apiSource}
-                    options={[
-                        { label: __('Movies (TMDB)', 'quick-choice-movies'), value: 'tmdb' },
-                        { label: __('Video Games (RAWG)', 'quick-choice-movies'), value: 'rawg' },
-                        { label: __('Books (Open Library)', 'quick-choice-movies'), value: 'openlibrary' },
-                    ]}
-                    onChange={setApiSource}
-                />
+                <div className="qcm-api-search-modal__row">
+                    <SelectControl
+                        label={__('API Source', 'quick-choice-movies')}
+                        value={apiSource}
+                        options={[
+                            { label: __('Movies (TMDB)', 'quick-choice-movies'), value: 'tmdb' },
+                            { label: __('Video Games (RAWG)', 'quick-choice-movies'), value: 'rawg' },
+                            { label: __('Books (Open Library)', 'quick-choice-movies'), value: 'openlibrary' },
+                        ]}
+                        onChange={setApiSource}
+                    />
+                    <SelectControl
+                        label={__('Language', 'quick-choice-movies')}
+                        value={language}
+                        options={LANGUAGE_OPTIONS}
+                        onChange={setLanguage}
+                    />
+                </div>
                 <SearchControl
                     label={__('Search', 'quick-choice-movies')}
                     value={searchQuery}

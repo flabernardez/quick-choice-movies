@@ -40,12 +40,13 @@ class QCM_API_Search {
 
         $api_source = isset( $_POST['api_source'] ) ? sanitize_text_field( $_POST['api_source'] ) : '';
         $query = isset( $_POST['query'] ) ? sanitize_text_field( $_POST['query'] ) : '';
+        $language = isset( $_POST['language'] ) ? sanitize_text_field( $_POST['language'] ) : '';
 
         if ( ! $api_source || ! $query ) {
             wp_send_json_error( array( 'message' => 'Missing parameters' ) );
         }
 
-        $results = $this->search( $api_source, $query );
+        $results = $this->search( $api_source, $query, $language );
 
         if ( false === $results ) {
             wp_send_json_error( array( 'message' => 'Invalid API source' ) );
@@ -61,14 +62,14 @@ class QCM_API_Search {
      * @param string $query Search query
      * @return array|false Results array or false if invalid source
      */
-    public function search( $api_source, $query ) {
+    public function search( $api_source, $query, $language = '' ) {
         switch ( $api_source ) {
             case 'tmdb':
-                return $this->search_tmdb( $query );
+                return $this->search_tmdb( $query, $language );
             case 'rawg':
-                return $this->search_rawg( $query );
+                return $this->search_rawg( $query, $language );
             case 'openlibrary':
-                return $this->search_openlibrary( $query );
+                return $this->search_openlibrary( $query, $language );
             default:
                 return false;
         }
@@ -77,7 +78,7 @@ class QCM_API_Search {
     /**
      * Search TMDB API
      */
-    private function search_tmdb( $query ) {
+    private function search_tmdb( $query, $language = '' ) {
         $api_key = get_option( 'qcm_tmdb_api_key', '' );
 
         if ( ! $api_key ) {
@@ -85,6 +86,9 @@ class QCM_API_Search {
         }
 
         $params = array( 'api_key' => $api_key );
+        if ( $language ) {
+            $params['language'] = $language;
+        }
         $endpoint = 'https://api.themoviedb.org/3/search/movie';
 
         if ( preg_match('/\b(actor|director|cast|person)\b/i', $query) ) {
@@ -111,8 +115,12 @@ class QCM_API_Search {
 
         if ( strpos( $endpoint, 'person' ) !== false && ! empty( $body['results'] ) ) {
             $person_id = $body['results'][0]['id'];
+            $credits_params = array( 'api_key' => $api_key );
+            if ( $language ) {
+                $credits_params['language'] = $language;
+            }
             $credits_url = add_query_arg(
-                array( 'api_key' => $api_key ),
+                $credits_params,
                 "https://api.themoviedb.org/3/person/{$person_id}/movie_credits"
             );
 
@@ -169,20 +177,21 @@ class QCM_API_Search {
     /**
      * Search RAWG API
      */
-    private function search_rawg( $query ) {
+    private function search_rawg( $query, $language = '' ) {
         $api_key = get_option( 'qcm_rawg_api_key', '' );
 
         if ( ! $api_key ) {
             return array();
         }
 
-        $url = add_query_arg(
-            array(
-                'key'    => $api_key,
-                'search' => $query,
-            ),
-            'https://api.rawg.io/api/games'
+        $params = array(
+            'key'    => $api_key,
+            'search' => $query,
         );
+        if ( $language ) {
+            $params['language'] = substr( $language, 0, 2 );
+        }
+        $url = add_query_arg( $params, 'https://api.rawg.io/api/games' );
 
         $response = wp_remote_get( $url );
 
@@ -216,14 +225,15 @@ class QCM_API_Search {
     /**
      * Search Open Library API
      */
-    private function search_openlibrary( $query ) {
-        $url = add_query_arg(
-            array(
-                'q'     => $query,
-                'limit' => 20,
-            ),
-            'https://openlibrary.org/search.json'
+    private function search_openlibrary( $query, $language = '' ) {
+        $params = array(
+            'q'     => $query,
+            'limit' => 20,
         );
+        if ( $language ) {
+            $params['language'] = substr( $language, 0, 3 );
+        }
+        $url = add_query_arg( $params, 'https://openlibrary.org/search.json' );
 
         $response = wp_remote_get( $url );
 

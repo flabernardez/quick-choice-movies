@@ -45,10 +45,9 @@ class QCM_Admin_Settings {
      * Add settings page
      */
     public function add_settings_page() {
-        add_submenu_page(
-            'edit.php?post_type=quick_choice',
-            __( 'Settings', 'quick-choice-movies' ),
-            __( 'Settings', 'quick-choice-movies' ),
+        add_options_page(
+            __( 'Quick Choice Movies', 'quick-choice-movies' ),
+            __( 'Quick Choice Movies', 'quick-choice-movies' ),
             'manage_options',
             'qcm-settings',
             array( $this, 'render_settings_page' )

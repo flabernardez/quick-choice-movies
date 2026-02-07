@@ -1,0 +1,132 @@
+.qcm-game-block {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.qcm-game-container {
+  position: relative;
+}
+
+.qcm-game-choices {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  align-items: stretch;
+  margin-bottom: 30px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+}
+
+.qcm-choice {
+  flex: 1;
+  max-width: 400px;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  }
+
+  &__image {
+    width: 100%;
+    aspect-ratio: 2/3;
+    object-fit: cover;
+  }
+
+  &__title {
+    padding: 15px;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    background: #f8f8f8;
+  }
+}
+
+.qcm-winner {
+  text-align: center;
+  padding: 40px 20px;
+
+  &__title {
+    font-size: 32px;
+    margin-bottom: 30px;
+    color: #f0f0f0;
+  }
+
+  &__choice {
+    display: inline-block;
+    max-width: 400px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+
+    img {
+      width: 100%;
+      aspect-ratio: 2/3;
+      object-fit: cover;
+    }
+
+    h3 {
+      padding: 20px;
+      font-size: 24px;
+      margin: 0;
+      background: #f8f8f8;
+    }
+  }
+}
+
+.qcm-game-controls {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.qcm-button {
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &--primary {
+    background: #3498db;
+    color: white;
+
+    &:hover {
+      background: #2980b9;
+    }
+  }
+
+  &--secondary {
+    background: #95a5a6;
+    color: white;
+
+    &:hover {
+      background: #7f8c8d;
+    }
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.qcm-loading {
+  text-align: center;
+  padding: 40px 20px;
+  font-size: 18px;
+  color: #666;
+}
+
+

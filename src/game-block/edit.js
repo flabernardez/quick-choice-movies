@@ -73,8 +73,8 @@ export default function Edit({ attributes, setAttributes }) {
                         <div className="qcm-game-block-info">
                             <h3>
                                 {gameType === 'tier_list'
-                                    ? __('Tier List Game', 'quick-choice-movies')
-                                    : __('Quick Choice Game', 'quick-choice-movies')
+                                    ? __('Tier List', 'quick-choice-movies')
+                                    : __('Quick Choice', 'quick-choice-movies')
                                 }
                             </h3>
                             <p>
