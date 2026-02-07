@@ -120,9 +120,7 @@
 
 /* Tier List Game Styles - TierMaker style */
 .qcm-tierlist-container {
-  max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
 }
 
@@ -143,9 +141,13 @@
   margin-bottom: 30px;
 }
 
+:root {
+  --poster-height: 200px;
+}
+
 .qcm-tier-row {
   display: flex;
-  min-height: 150px;
+  min-height: var(--poster-height);
   border-bottom: 1px solid #1a1a2e;
 }
 
@@ -154,7 +156,7 @@
 }
 
 .qcm-tier-label {
-  width: 10rem;
+  width: 14rem;
   padding: 20px;
   display: flex;
   align-items: center;
@@ -183,7 +185,7 @@
 /* Item Cards */
 .qcm-tierlist-item {
   width: auto;
-  height: 150px;
+  height: var(--poster-height);
   background: #2d2d44;
   border-radius: 4px;
   overflow: hidden;
