@@ -15,16 +15,7 @@
         }
 
         async init() {
-            const savedState = this.loadFromStorage();
-
-            if (savedState) {
-                this.items = savedState.items;
-                this.tiers = savedState.tiers;
-                this.rankings = savedState.rankings;
-                this.render();
-            } else {
-                await this.loadData();
-            }
+            await this.loadData();
         }
 
         async loadData() {
@@ -48,7 +39,21 @@
                 if (data.success) {
                     this.items = data.data.items || [];
                     this.tiers = data.data.tiers || [];
-                    this.rankings = {};
+
+                    // Restore only rankings from cookie, filtering out stale item IDs
+                    const savedRankings = this.loadFromStorage();
+                    if (savedRankings) {
+                        const validIds = new Set(this.items.map(item => String(item.id)));
+                        this.rankings = {};
+                        for (const [itemId, tierId] of Object.entries(savedRankings)) {
+                            if (validIds.has(itemId)) {
+                                this.rankings[itemId] = tierId;
+                            }
+                        }
+                    } else {
+                        this.rankings = {};
+                    }
+
                     this.render();
                 } else {
                     this.container.innerHTML = '<div class="qcm-tierlist-loading">Error: ' + (data.data?.message || 'No se pudo cargar') + '</div>';
@@ -140,14 +145,17 @@
         }
 
         handleDragStart(e) {
-            this.draggedItem = e.target;
-            e.target.classList.add('dragging');
+            const item = e.target.closest('.qcm-tierlist-item');
+            if (!item) return;
+            this.draggedItem = item;
+            item.classList.add('dragging');
             e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/plain', e.target.dataset.itemId);
+            e.dataTransfer.setData('text/plain', item.dataset.itemId);
         }
 
         handleDragEnd(e) {
-            e.target.classList.remove('dragging');
+            const item = e.target.closest('.qcm-tierlist-item');
+            if (item) item.classList.remove('dragging');
             this.draggedItem = null;
 
             // Remove all drag-over classes
@@ -204,9 +212,8 @@
 
         reset() {
             if (confirm('¿Estás seguro de que quieres reiniciar? Se perderá tu progreso.')) {
-                this.rankings = {};
                 this.clearStorage();
-                this.render();
+                this.loadData();
             }
         }
 
@@ -222,14 +229,9 @@
         }
 
         saveToStorage() {
-            const state = {
-                items: this.items,
-                tiers: this.tiers,
-                rankings: this.rankings,
-            };
             const days = (qcmTierList && qcmTierList.cookieExpiration) ? parseInt(qcmTierList.cookieExpiration) : 30;
             const expires = new Date(Date.now() + days * 864e5).toUTCString();
-            document.cookie = this.gameId + '=' + encodeURIComponent(JSON.stringify(state)) + ';expires=' + expires + ';path=/;SameSite=Lax';
+            document.cookie = this.gameId + '=' + encodeURIComponent(JSON.stringify(this.rankings)) + ';expires=' + expires + ';path=/;SameSite=Lax';
         }
 
         loadFromStorage() {
